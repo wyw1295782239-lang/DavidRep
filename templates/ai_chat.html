@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>旅游信息智能客服</h5>
+                <span class="text-muted">智能解答您的旅游相关问题</span>
+            </div>
+            <div class="card-block">
+                <div class="chat-container" style="height: 500px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 5px; padding: 1rem;">
+                    <div id="chat-messages" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- 聊天消息将在这里显示 -->
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    {% csrf_token %}
+                    <input type="text" id="user-question" class="form-control" placeholder="请输入您的问题...">
+                    <button type="button" id="send-btn" class="btn btn-primary">发送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 初始化聊天界面
+    function initChat() {
+        // 添加欢迎消息
+        addMessage('assistant', '您好！我是旅游智能客服，有什么可以帮助您的吗？');
+        
+        // 绑定发送按钮点击事件
+        document.getElementById('send-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            sendMessage();
+        });
+        
+        // 绑定回车键事件
+        document.getElementById('user-question').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                sendMessage();
+            }
+        });
+        
+        // 防止表单提交
+        document.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    }
+    
+    // 发送消息
+    function sendMessage() {
+        const question = document.getElementById('user-question').value.trim();
+        if (!question) return;
+        
+        // 添加用户消息
+        addMessage('user', question);
+        
+        // 清空输入框
+        document.getElementById('user-question').value = '';
+        
+        // 显示加载状态
+        const loadingId = addMessage('assistant', '<div class="spinner-border spinner-border-sm" role="status"><span class="sr-only">Loading...</span></div> 正在思考中...');
+        
+        // 获取CSRF令牌
+        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+        
+        // 发送请求到后端
+        fetch('/home/ai_chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: 'question=' + encodeURIComponent(question)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            if (!response.ok) {
+                throw new Error('网络请求失败: ' + response.status + ' ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            // 移除加载状态
+            document.getElementById(loadingId).remove();
+            
+            // 添加助手回复
+            if (data.success) {
+                addMessage('assistant', data.answer);
+            } else {
+                addMessage('assistant', data.answer || '抱歉，我暂时无法回答您的问题，请稍后再试。');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // 移除加载状态
+            document.getElementById(loadingId).remove();
+            
+            // 添加错误消息
+            addMessage('assistant', '抱歉，网络错误，请稍后再试。错误信息: ' + error.message);
+        });
+    }
+    
+    // 添加消息到聊天界面
+    function addMessage(role, content) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        const messageId = 'message-' + Date.now();
+        messageDiv.id = messageId;
+        
+        if (role === 'user') {
+            messageDiv.className = 'd-flex justify-content-end';
+            messageDiv.innerHTML = `
+                <div class="message-content" style="background-color: #e3f2fd; padding: 0.75rem; border-radius: 1rem 1rem 0 1rem; max-width: 70%;">
+                    ${content}
+                </div>
+            `;
+        } else {
+            messageDiv.className = 'd-flex justify-content-start';
+            messageDiv.innerHTML = `
+                <div class="message-content" style="background-color: #f5f5f5; padding: 0.75rem; border-radius: 1rem 1rem 1rem 0; max-width: 70%;">
+                    ${content}
+                </div>
+            `;
+        }
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        return messageId;
+    }
+    
+    // 页面加载完成后初始化聊天界面
+    window.addEventListener('DOMContentLoaded', initChat);
+</script>
+{% endblock %}

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    {% load static %}
+    <title>登录</title>
+    <!-- HTML5 Shim and Respond.js IE10 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 10]>
+      <![endif]-->
+      <!-- Meta -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <meta name="description" content="Mega Able Bootstrap admin template made using Bootstrap 4 and it has huge amount of ready made feature, UI components, pages which completely fulfills any dashboard needs." />
+      <meta name="keywords" content="bootstrap, bootstrap admin template, admin theme, admin dashboard, dashboard template, admin template, responsive" />
+        <!-- Favicon icon -->
+
+      <link rel="icon" href={% static "assets/images/favicon.ico"  %}}type="image/x-icon">
+      <!-- Google font-->     
+      <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
+      <!-- Required Fremwork -->
+      <link rel="stylesheet" type="text/css" href={% static "assets/css/bootstrap/css/bootstrap.min.css" %}>
+      <!-- waves.css -->
+      <link rel="stylesheet" href={% static "assets/pages/waves/css/waves.min.css" %}type="text/css" media="all">
+      <!-- themify-icons line icon -->
+      <link rel="stylesheet" type="text/css" href={% static "assets/icon/themify-icons/themify-icons.css"%}>
+      <!-- ico font -->
+      <link rel="stylesheet" type="text/css" href={% static "assets/icon/icofont/css/icofont.css"%}>
+      <!-- Font Awesome -->
+      <link rel="stylesheet" type="text/css" href={% static "assets/icon/font-awesome/css/font-awesome.min.css"%}>
+      <!-- Style.css -->
+      <link rel="stylesheet" type="text/css" href={% static  "assets/css/style.css"%}>
+    <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    .login-block {
+      margin: 0;
+      padding: 0;
+    }
+    .container-fluid {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+
+    <section class="login-block">
+        <!-- Container-fluid starts -->
+        <div class="container-fluid" style="background-image: url({% static 'assets/images/widget/loginbackground.jpg' %});min-height:100vh;background-size:cover;background-position: top left;background-repeat: no-repeat;">
+            <div class="row" style="">
+                <div class="col-sm-12">
+                    <!-- Authentication card start -->
+
+                        <!-- 密码登录表单 -->
+                        <form id="passwordLoginForm" class="md-float-material form-material" method="post" action="{% url 'user:login' %}" autocomplete="off">
+                            {% csrf_token %}
+                            <!-- 隐藏的假输入框用于欺骗浏览器自动填充 -->
+                            <div style="display: none;">
+                                <input type="text" name="fake_username" autocomplete="username">
+                                <input type="password" name="fake_password" autocomplete="password">
+                            </div>
+                            <div class="text-center" style="color:white;font-size:25px;margin-top: 100px;">
+                                国内旅游景点分析与AI旅游路线推荐
+                            </div>
+                            <div class="auth-box card" style="height: 500px;">
+                                <div class="card-block">
+                                    <div class="row md-20">
+                                        <div class="col-md-12">
+                                            <h3 class="text-center">登录</h3>
+                                            {% if error %}
+                                            <p style="color: red; text-align: center;">{{ error }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-primary">
+                                        <input type="text" name="username" id="loginUsername" class="form-control" required="" autocomplete="new-username" readonly onfocus="this.removeAttribute('readonly');">
+                                        <span class="form-bar"></span>
+                                        <label class="float-label">用户名</label>
+                                    </div>
+                                    <div class="form-group form-primary">
+                                        <input type="password" name="password" id="loginPassword" class="form-control" required="" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');">
+                                        <span class="form-bar"></span>
+                                        <label class="float-label">密码</label>
+                                    </div>
+                                    <div class="row m-t-25 text-left">
+                                        <div class="col-12">
+                                            <div class="checkbox-fade fade-in-primary d-">
+                                                <label>
+                                                    <input type="checkbox" value="">
+                                                    <span class="cr"><i class="cr-icon icofont icofont-ui-check txt-primary"></i></span>
+                                                    <span class="text-inverse">记住我</span>
+                                                </label>
+                                            </div>
+                                            <div class="forgot-phone text-right f-right">
+                                                <a href="#" id="forgotPasswordLink" class="text-right f-w-600"> 忘记密码？</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row m-t-30">
+                                        <div class="col-md-12">
+                                            <button type="submit" class="btn btn-primary btn-md btn-block waves-effect waves-light text-center m-b-20">登录</button>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-md-10">
+                                            <p class="text-inverse text-left m-b-0">谢谢。</p>
+                                            <p class="text-inverse text-left"><a href="{% url 'user:register' %}"><b>去注册</b></a></p>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <img src={% static "assets/images/auth/Logo-small-bottom.png" %} alt="small-logo.png">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <!-- 验证码登录表单 -->
+                        <form id="verifyCodeLoginForm" class="md-float-material form-material" method="post" action="{% url 'user:verify_login' %}" autocomplete="off" style="display: none;">
+                            {% csrf_token %}
+                            <div class="text-center" style="color:white;font-size:25px;margin-top: 100px;">
+                                国内旅游景点分析与AI旅游路线推荐
+                            </div>
+                            <div class="auth-box card" style="height: 500px;">
+                                <div class="card-block">
+                                    <div class="row md-20">
+                                        <div class="col-md-12">
+                                            <h3 class="text-center">验证码登录</h3>
+                                            {% if verify_error %}
+                                            <p style="color: red; text-align: center;">{{ verify_error }}</p>
+                                            {% endif %}
+                                            {% if success_message %}
+                                            <p style="color: green; text-align: center;">{{ success_message }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-primary">
+                                        <input type="text" name="email" id="verifyEmail" class="form-control" required="" autocomplete="new-email">
+                                        <span class="form-bar"></span>
+                                        <label class="float-label">邮箱地址</label>
+                                    </div>
+                                    <div class="form-group form-primary">
+                                        <input type="text" name="verify_code" id="verifyCode" class="form-control" required="" placeholder="验证码">
+                                        <span class="form-bar"></span>
+                                        <label class="float-label">验证码</label>
+                                    </div>
+                                    <div class="row m-t-25 text-left">
+                                        <div class="col-12">
+                                            <button type="button" id="sendVerifyCodeBtn" class="btn btn-outline-primary btn-md waves-effect waves-light">发送验证码</button>
+                                            <span id="countdown" style="display: none; margin-left: 10px; color: #666;">60秒后重新发送</span>
+                                            <div class="forgot-phone text-right f-right">
+                                                <a href="#" id="backToPasswordLink" class="text-right f-w-600">返回密码登录</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row m-t-30">
+                                        <div class="col-md-12">
+                                            <button type="submit" class="btn btn-primary btn-md btn-block waves-effect waves-light text-center m-b-20">登录</button>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-md-10">
+                                            <p class="text-inverse text-left m-b-0">谢谢。</p>
+                                            <p class="text-inverse text-left"><a href="{% url 'user:register' %}"><b>去注册</b></a></p>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <img src={% static "assets/images/auth/Logo-small-bottom.png" %} alt="small-logo.png">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- end of form -->
+                </div>
+                <!-- end of col-sm-12 -->
+            </div>
+            <!-- end of row -->
+        </div>
+        <!-- end of container-fluid -->
+    </section>
+    <!-- Warning Section Starts -->
+    <!-- Older IE warning message -->
+    <!--[if lt IE 10]>
+<div class="ie-warning">
+    <h1>Warning!!</h1>
+    <p>You are using an outdated version of Internet Explorer, please upgrade <br/>to any of the following web browsers to access this website.</p>
+    <div class="iew-container">
+        <ul class="iew-download">
+            <li>
+                <a href="http://www.google.com/chrome/">
+                    <img src={% static "assets/images/browser/chrome.png" %} alt="Chrome">
+                    <div>Chrome</div>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.mozilla.org/en-US/firefox/new/">
+                    <img src={% static "assets/images/browser/firefox.png" %} alt="Firefox">
+                    <div>Firefox</div>
+                </a>
+            </li>
+            <li>
+                <a href="http://www.opera.com">
+                    <img src={% static "assets/images/browser/opera.png" %} alt="Opera">
+                    <div>Opera</div>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.apple.com/safari/">
+                    <img src={% static "assets/images/browser/safari.png" %} alt="Safari">
+                    <div>Safari</div>
+                </a>
+            </li>
+            <li>
+                <a href="http://windows.microsoft.com/en-us/internet-explorer/download-ie">
+                    <img src={% static "assets/images/browser/ie.png" %} alt="">
+                    <div>IE (9 & above)</div>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <p>Sorry for the inconvenience!</p>
+</div>
+<![endif]-->
+<!-- Warning Section Ends -->
+<!-- Required Jquery -->
+    <script type="text/javascript" src={% static "assets/js/jquery/jquery.min.js" %}></script>
+    <script type="text/javascript" src={% static "assets/js/jquery-ui/jquery-ui.min.js" %}></script>
+    <script type="text/javascript" src={% static "assets/js/popper.js/popper.min.js" %}></script>
+    <script type="text/javascript" src={% static "assets/js/bootstrap/js/bootstrap.min.js" %}></script>
+<!-- waves js -->
+<script src={% static "assets/pages/waves/js/waves.min.js"%}></script>
+<!-- jquery slimscroll js -->
+<script type="text/javascript" src={% static "assets/js/jquery-slimscroll/jquery.slimscroll.js "%}></script>
+<!-- modernizr js -->
+    <script type="text/javascript" src={% static "assets/js/SmoothScroll.js" %}></script>     <script src={% static "assets/js/jquery.mCustomScrollbar.concat.min.js "%}></script>
+<!-- i18next.min.js -->
+<script type="text/javascript" src={% static  "bower_components/i18next/js/i18next.min.js"%}></script>
+<script type="text/javascript" src={% static "bower_components/i18next-xhr-backend/js/i18nextXHRBackend.min.js"%}></script>
+<script type="text/javascript" src={% static "bower_components/i18next-browser-languagedetector/js/i18nextBrowserLanguageDetector.min.js"%}></script>
+<script type="text/javascript" src={% static "bower_components/jquery-i18next/js/jquery-i18next.min.js"%}></script>
+<script type="text/javascript" src={% static "assets/js/common-pages.js" %}></script>
+<script type="text/javascript">
+    // 页面加载后处理浏览器自动填充问题
+    document.addEventListener('DOMContentLoaded', function() {
+        var emailInput = document.getElementById('loginEmail');
+        var passwordInput = document.getElementById('loginPassword');
+        var inputs = [emailInput, passwordInput];
+        
+        // 只在页面首次加载时处理一次
+        var hasProcessed = false;
+        
+        // 延迟处理，确保浏览器自动填充完成
+        setTimeout(function() {
+            if (!hasProcessed) {
+                hasProcessed = true;
+                inputs.forEach(function(input) {
+                    if (input) {
+                        // 移除readonly属性，允许用户输入
+                        input.removeAttribute('readonly');
+                    }
+                });
+            }
+        }, 150);
+        
+        // 输入框聚焦时的逻辑
+        inputs.forEach(function(input) {
+            if (input) {
+                input.addEventListener('focus', function() {
+                    this.removeAttribute('readonly');
+                });
+            }
+        });
+        
+        // 忘记密码链接点击事件
+        document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('passwordLoginForm').style.display = 'none';
+            document.getElementById('verifyCodeLoginForm').style.display = 'block';
+            // 将邮箱地址复制到验证码登录表单
+            var loginEmail = document.getElementById('loginEmail').value;
+            if (loginEmail) {
+                document.getElementById('verifyEmail').value = loginEmail;
+            }
+        });
+        
+        // 返回密码登录链接点击事件
+        document.getElementById('backToPasswordLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('verifyCodeLoginForm').style.display = 'none';
+            document.getElementById('passwordLoginForm').style.display = 'block';
+        });
+        
+        // 发送验证码按钮点击事件
+        document.getElementById('sendVerifyCodeBtn').addEventListener('click', function() {
+            var email = document.getElementById('verifyEmail').value;
+            if (!email) {
+                alert('请先输入邮箱地址');
+                return;
+            }
+            
+            var btn = this;
+            var countdown = document.getElementById('countdown');
+            
+            // 发送验证码
+            fetch('{% url "user:send_verify_code" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'email=' + encodeURIComponent(email)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('验证码已发送到您的邮箱');
+                    // 开始倒计时
+                    btn.disabled = true;
+                    btn.style.display = 'none';
+                    countdown.style.display = 'inline';
+                    var seconds = 60;
+                    var timer = setInterval(function() {
+                        seconds--;
+                        countdown.textContent = seconds + '秒后重新发送';
+                        if (seconds <= 0) {
+                            clearInterval(timer);
+                            btn.disabled = false;
+                            btn.style.display = 'inline-block';
+                            countdown.style.display = 'none';
+                        }
+                    }, 1000);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                alert('发送失败，请重试');
+            });
+        });
+    });
+</script>
+</body>
+
+</html>

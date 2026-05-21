@@ -1,0 +1,187 @@
+{% extends "admin/base.html" %}
+{% load  static themeui_tag %}
+
+
+
+{% block title %}
+    {% theme_ui as theme %}
+    {{ title }} |
+
+    {% if theme %}
+        {{ theme.title_window }} |
+    {% else %}
+        {{ site_title|default:_('Django site admin') }}
+    {% endif %}
+
+{% endblock %}
+
+
+{% block branding %}
+    {% theme_ui as theme %}
+    <h1 id="site-name">
+        <a href="{% url 'admin:index' %}">
+            {% if theme %}
+                {{ theme.site_name }}
+            {% else %}
+                {{ _('Django administration') }}
+            {% endif %}
+        </a>
+    </h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+
+{% block extrastyle %}
+    {% theme_ui as theme %}
+    {% if theme %}
+        <style>
+            body {
+                color: {{ theme.body_color }};
+            }
+
+            #header {
+                background: {{ theme.header_bg_color }};
+                color: {{ theme.header_color }};
+            }
+
+            #header a:link, #header a:visited,
+            #branding h1, #branding h1 a:link, #branding h1 a:visited {
+                color: {{ theme.header_color }};
+            }
+
+            div.breadcrumbs {
+                background: {{ theme.breadcrumbs_bg_color }};
+                color: {{ theme.breadcrumbs_color }};
+            }
+
+            .module h2, .module caption, .inline-group h2 {
+                background: {{ theme.module_bg_color }};
+                color: {{ theme.module_color }};
+            }
+
+            #nav-sidebar .current-model {
+                background: {{ theme.sidebar_current_model_bg_color }};
+            }
+
+            a.section:link, a.section:visited {
+                color: {{ theme.section_link_color }};
+            }
+
+            a:link, a:visited {
+                color: {{ theme.link_color }};
+            }
+
+            a:focus, a:hover {
+                color: {{ theme.link_hover_color }};
+            }
+
+            a.section:link, a.section:visited {
+                color: {{ theme.section_link_visited_color }};
+            }
+
+            #nav-sidebar .current-app .section:link,
+            #nav-sidebar .current-app .section:visited {
+                color: {{ theme.sidebar_color }};
+            }
+
+            #content-related {
+                background: {{ theme.content_related_bg_color }};
+            }
+
+            #content-related .module h2 {
+                color: {{ theme.content_related_title_color }};
+            }
+
+            #content-related h3 {
+                color: {{ theme.content_related_sub_title_color }};
+            }
+
+            .quiet, a.quiet:link, a.quiet:visited {
+                color: {{ theme.quiet_color }};
+            }
+
+            .object-tools a:link, .object-tools a:visited {
+                color: {{ theme.button_tools_color }};
+                background: {{ theme.button_tools_bg_color }};
+            }
+
+            .object-tools a:focus, .object-tools a:hover {
+                color: {{ theme.button_tools_hover_color }};
+                background: {{ theme.button_tools_hover_bg_color }};
+            }
+
+            thead th {
+                color: {{ theme.th_color }};
+                background: {{ theme.th_bg_color }};
+            }
+
+            tr:nth-child(even), tr:nth-child(even) .errorlist, tr:nth-child(odd) + .row-form-errors, tr:nth-child(odd) + .row-form-errors .errorlist {
+                background: {{ theme.tr_even_bg_color }};
+            }
+
+            #changelist .paginator {
+                color: {{ theme.paginator_color }};
+                background: {{ theme.paginator_bg_color }};
+                border-color: {{ theme.paginator_border_color }};
+            }
+
+            .submit-row a.deletelink {
+                color: {{ theme.submit_delete_button_color }};
+                background: {{ theme.submit_delete_button_bg_color }};
+            }
+
+            .submit-row a.deletelink:focus, .submit-row a.deletelink:hover, .submit-row a.deletelink:active {
+                background: {{ theme.submit_delete_button_bg_hover_color }};
+            }
+
+            .button, input[type=submit], input[type=button], .submit-row input, a.button {
+                color: {{ theme.submit_save_secondary_color }};
+                background: {{ theme.submit_save_secondary_bg_color }};
+            }
+
+            .button:active, input[type=submit]:active, input[type=button]:active, .button:focus, input[type=submit]:focus, input[type=button]:focus, .button:hover, input[type=submit]:hover, input[type=button]:hover {
+                background: {{ theme.submit_save_secondary_bg_hover_color }};
+            }
+
+            .button.default, input[type=submit].default, .submit-row input.default {
+                color: {{ theme.submit_save_primary_color }};
+                background: {{ theme.submit_save_primary_bg_color }};
+            }
+
+            .button.default:active, input[type=submit].default:active, .button.default:focus, input[type=submit].default:focus, .button.default:hover, input[type=submit].default:hover {
+                background: {{ theme.submit_save_primary_bg_hover_color }};
+            }
+
+            .delete-confirmation form .cancel-link {
+                color: {{ theme.cancel_button_color }};
+                background: {{ theme.cancel_button_bg_color }};
+            }
+
+            .delete-confirmation form .cancel-link:active, .delete-confirmation form .cancel-link:focus, .delete-confirmation form .cancel-link:hover {
+                background: {{ theme.cancel_button_bg_hover_color }};
+            }
+
+            ul.messagelist li {
+                color: {{ theme.alert_message_color }};
+                background: {{ theme.alert_message_bg_color }};
+            }
+
+            ul.messagelist li.error {
+                color: {{ theme.error_alert_message_color }};
+                background: {{ theme.error_alert_message_bg_color }};
+            }
+
+            ul.messagelist li.warning {
+                color: {{ theme.error_alert_message_color }};
+                background: {{ theme.error_alert_message_bg_color }};
+            }
+
+            ul.messagelist li.warning {
+                color: {{ theme.warning_alert_message_color }};
+                background: {{ theme.warning_alert_message_bg_color }};
+            }
+        </style>
+    {% endif %}
+    <script src="{% static 'dynamic_field.min.js' %}"></script>
+{% endblock %}

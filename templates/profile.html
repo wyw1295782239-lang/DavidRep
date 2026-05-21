@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-header-text">个人信息管理</h5>
+            </div>
+            <div class="card-block">
+                {% if success_message %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ success_message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <!-- 左侧：头像展示 -->
+                    <div class="col-md-3 text-center">
+                        <div class="card">
+                            <div class="card-block">
+                                {% if user.avatar %}
+                                <img src="{{ MEDIA_URL }}{{ user.avatar }}" alt="用户头像" class="img-fluid img-radius" style="max-width: 150px; max-height: 150px;">
+                                {% else %}
+                                <img src="{% static 'assets/images/avatar-4.jpg' %}" alt="用户头像" class="img-fluid img-radius" style="max-width: 150px; max-height: 150px;">
+                                {% endif %}
+                                <h5 class="m-t-20">{{ user.username }}</h5>
+                                <p class="text-muted">{{ user.uemail }}</p>
+                                <p class="text-muted">注册时间：{{ user.created_at|date:"Y-m-d" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：信息编辑表单 -->
+                    <div class="col-md-9">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-header-text">编辑个人信息</h5>
+                            </div>
+                            <div class="card-block">
+                                <form method="post" action="{% url 'user:profile' %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group form-primary">
+                                                <label class="col-form-label">用户名</label>
+                                                <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+                                                <span class="form-bar"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group form-primary">
+                                                <label class="col-form-label">邮箱地址</label>
+                                                <input type="email" name="uemail" class="form-control" value="{{ user.uemail }}" required>
+                                                <span class="form-bar"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group form-primary">
+                                                <label class="col-form-label">手机号码</label>
+                                                <input type="tel" name="uphone" class="form-control" value="{{ user.uphone }}">
+                                                <span class="form-bar"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group form-primary">
+                                                <label class="col-form-label">邮政编码</label>
+                                                <input type="text" name="uyoubian" class="form-control" value="{{ user.uyoubian }}">
+                                                <span class="form-bar"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group form-primary">
+                                                <label class="col-form-label">详细地址</label>
+                                                <input type="text" name="uaddress" class="form-control" value="{{ user.uaddress }}">
+                                                <span class="form-bar"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group form-primary">
+                                                <label class="col-form-label">更新头像</label>
+                                                <input type="file" name="avatar" class="form-control" accept="image/*">
+                                                <span class="form-bar"></span>
+                                                <small class="form-text text-muted">支持 JPG、PNG 格式，文件大小不超过 5MB</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="m-t-30 m-b-30">
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6 class="m-b-20">修改密码（如不修改请留空）</h6>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group form-primary">
+                                                <label class="col-form-label">新密码</label>
+                                                <input type="password" name="new_password" class="form-control" placeholder="请输入新密码">
+                                                <span class="form-bar"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group form-primary">
+                                                <label class="col-form-label">确认新密码</label>
+                                                <input type="password" name="confirm_password" class="form-control" placeholder="请再次输入新密码">
+                                                <span class="form-bar"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row m-t-30">
+                                        <div class="col-md-12 text-center">
+                                            <button type="submit" class="btn btn-primary waves-effect waves-light">
+                                                <i class="ti-save"></i> 保存修改
+                                            </button>
+                                            <a href="{% url 'home:index' %}" class="btn btn-secondary waves-effect waves-light m-l-10">
+                                                <i class="ti-arrow-left"></i> 返回首页
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 账户信息概览 -->
+                <div class="row m-t-30">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-header-text">账户信息概览</h5>
+                            </div>
+                            <div class="card-block">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            <tr>
+                                                <td style="width: 20%;"><strong>用户ID</strong></td>
+                                                <td>{{ user.id }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>用户名</strong></td>
+                                                <td>{{ user.username }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>邮箱地址</strong></td>
+                                                <td>{{ user.uemail }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>手机号码</strong></td>
+                                                <td>{% if user.uphone %}{{ user.uphone }}{% else %}<span class="text-muted">未设置</span>{% endif %}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>详细地址</strong></td>
+                                                <td>{% if user.uaddress %}{{ user.uaddress }}{% else %}<span class="text-muted">未设置</span>{% endif %}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>邮政编码</strong></td>
+                                                <td>{% if user.uyoubian %}{{ user.uyoubian }}{% else %}<span class="text-muted">未设置</span>{% endif %}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>注册时间</strong></td>
+                                                <td>{{ user.created_at|date:"Y年m月d日 H:i:s" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>最后更新时间</strong></td>
+                                                <td>{{ user.updated_at|date:"Y年m月d日 H:i:s" }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

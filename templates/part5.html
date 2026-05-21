@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <!-- 左侧区域分布图 -->
+    <div class="col-xl-6 col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>景点区域分布</h5>
+                <span class="text-muted">点击区域查看该区域内的景点</span>
+            </div>
+            <div class="card-block">
+                <div id="region-chart" style="width: 100%; height: 600px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 右侧景点列表 -->
+    <div class="col-xl-6 col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>区域景点列表</h5>
+                <span class="text-muted">点击左侧区域查看景点</span>
+            </div>
+            <div class="card-block">
+                <div id="spots-chart" style="width: 100%; height: 600px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+var regionData = {{ region_data|safe }};
+var areaSpotsData = {{ area_spots_data|safe }};
+
+// 创建区域分布图
+var regionChart = echarts.init(document.getElementById('region-chart'));
+
+var regionOption = {
+    title: {
+        text: '景点区域分布',
+        left: 'center',
+        textStyle: {
+            fontSize: 18,
+            fontWeight: 'bold'
+        }
+    },
+    tooltip: {
+        trigger: 'item',
+        formatter: function(params) {
+            return params.name + ': ' + params.value + '个景点';
+        }
+    },
+    series: [
+        {
+            name: '景点区域分布',
+            type: 'treemap',
+            data: regionData,
+            roam: false,
+            label: {
+                show: true,
+                formatter: '{b}',
+                fontSize: 12
+            },
+            itemStyle: {
+                borderColor: '#fff'
+            },
+            levels: [
+                {
+                    itemStyle: {
+                        borderColor: '#777',
+                        borderWidth: 0,
+                        gapWidth: 1
+                    },
+                    upperLabel: {
+                        show: false
+                    }
+                }
+            ],
+            emphasis: {
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+
+regionChart.setOption(regionOption);
+
+// 创建右侧景点列表图表
+var spotsChart = echarts.init(document.getElementById('spots-chart'));
+
+var spotsOption = {
+    title: {
+        text: '请选择一个区域',
+        left: 'center',
+        textStyle: {
+            fontSize: 16,
+            color: '#999'
+        }
+    },
+    tooltip: {
+        trigger: 'item',
+        formatter: function(params) {
+            return params.name;
+        }
+    },
+    series: [
+        {
+            name: '景点列表',
+            type: 'pie',
+            radius: ['40%', '70%'],
+            center: ['50%', '50%'],
+            avoidLabelOverlap: false,
+            itemStyle: {
+                borderRadius: 10,
+                borderColor: '#fff',
+                borderWidth: 2
+            },
+            label: {
+                show: true,
+                position: 'outside',
+                formatter: '{b}'
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: 14,
+                    fontWeight: 'bold'
+                }
+            },
+            labelLine: {
+                show: true
+            },
+            data: []
+        }
+    ]
+};
+
+spotsChart.setOption(spotsOption);
+
+// 点击区域分布图时更新右侧景点列表
+regionChart.on('click', function(params) {
+    var areaName = params.name;
+    
+    // 查找该区域的景点
+    var spots = [];
+    for (var i = 0; i < areaSpotsData.length; i++) {
+        if (areaSpotsData[i].area === areaName) {
+            spots = areaSpotsData[i].name;
+            break;
+        }
+    }
+    
+    // 转换为图表数据格式
+    var chartData = spots.map(function(spot, index) {
+        return {
+            value: index + 1,
+            name: spot
+        };
+    });
+    
+    // 更新右侧图表
+    spotsChart.setOption({
+        title: {
+            text: areaName + ' - 景点列表',
+            left: 'center',
+            textStyle: {
+                fontSize: 16,
+                fontWeight: 'bold',
+                color: '#333'
+            }
+        },
+        series: [
+            {
+                data: chartData
+            }
+        ]
+    });
+});
+
+// 响应式
+window.addEventListener('resize', function() {
+    regionChart.resize();
+    spotsChart.resize();
+});
+</script>
+{% endblock %}

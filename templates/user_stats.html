@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <div class="main-body">
+            <div class="page-wrapper">
+                <div class="page-header">
+                    <div class="page-block">
+                        <div class="row align-items-center">
+                            <div class="col-md-12">
+                                <div class="page-header-title">
+                                    <h5>用户统计</h5>
+                                </div>
+                                <ul class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                                    <li class="breadcrumb-item"><a href="#">后台管理</a></li>
+                                    <li class="breadcrumb-item"><a href="#">用户统计</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card prod-p-card card-border">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <p class="m-b-5 text-muted">总用户数</p>
+                                        <h4 class="m-b-0">{{ total_users }}</h4>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fa fa-users text-c-blue f-18"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card prod-p-card card-border">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <p class="m-b-5 text-muted">今日新增用户</p>
+                                        <h4 class="m-b-0">{{ today_users }}</h4>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fa fa-user-plus text-c-green f-18"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-12 col-md-12">
+                        <div class="card table-card">
+                            <div class="card-header">
+                                <h5>用户注册数统计</h5>
+                            </div>
+                            <div class="card-block">
+                                <div id="userCreate" style="height:500px;width:100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+var chartDom = document.getElementById('userCreate');
+var myChart = echarts.init(chartDom);
+var option;
+
+option = {
+  title: {
+    text: '用户注册数统计',
+    left: 'center',
+    textStyle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#333'
+    }
+  },
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    },
+    backgroundColor: 'rgba(50, 50, 50, 0.9)',
+    borderColor: '#333',
+    borderWidth: 0,
+    textStyle: {
+      color: '#fff'
+    },
+    formatter: function(params) {
+      return params[0].name + '<br/>' +
+             '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:#1890ff;"></span>' +
+             '创建数量: ' + params[0].value + ' 个';
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '15%',
+    containLabel: true
+  },
+  xAxis: {
+    type: 'category',
+    data: {{ name_list|safe }},
+    axisLabel: {
+      rotate: 45,
+      interval: 0,
+      fontSize: 12,
+      color: '#666'
+    },
+    axisLine: {
+      lineStyle: {
+        color: '#e0e0e0'
+      }
+    },
+    axisTick: {
+      alignWithLabel: true
+    }
+  },
+  yAxis: {
+    type: 'value',
+    name: '创建数量',
+    nameTextStyle: {
+      fontSize: 14,
+      color: '#666'
+    },
+    axisLabel: {
+      fontSize: 12,
+      color: '#666'
+    },
+    axisLine: {
+      lineStyle: {
+        color: '#e0e0e0'
+      }
+    },
+    splitLine: {
+      lineStyle: {
+        color: '#f0f0f0',
+        type: 'dashed'
+      }
+    }
+  },
+  series: [
+    {
+      name: '创建数量',
+      data: {{ value_list|safe }},
+      type: 'bar',
+      barWidth: '60%',
+      itemStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [{
+            offset: 0, color: '#69c0ff'
+          }, {
+            offset: 1, color: '#1890ff'
+          }]
+        },
+        borderRadius: [8, 8, 0, 0],
+        shadowColor: 'rgba(24, 144, 255, 0.3)',
+        shadowBlur: 10,
+        shadowOffsetY: 5
+      },
+      emphasis: {
+        itemStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [{
+              offset: 0, color: '#91d5ff'
+            }, {
+              offset: 1, color: '#40a9ff'
+            }]
+          }
+        }
+      },
+      label: {
+        show: true,
+        position: 'top',
+        fontSize: 12,
+        color: '#666',
+        fontWeight: 'bold'
+      },
+      animationDelay: function (idx) {
+        return idx * 100;
+      }
+    }
+  ],
+  animationEasing: 'elasticOut',
+  animationDelayUpdate: function (idx) {
+    return idx * 5;
+  }
+};
+
+option && myChart.setOption(option);
+
+window.addEventListener('resize', function() {
+  myChart.resize();
+});
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

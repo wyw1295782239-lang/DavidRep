@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-xl-12 col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>AI旅游路线推荐</h5>
+                <span class="text-muted">根据您的需求生成个性化旅游路线</span>
+            </div>
+            <div class="card-block">
+                <form id="travel-form" class="form-horizontal">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="city" class="form-label">目的地</label>
+                                <input type="text" id="city" class="form-control" placeholder="请输入城市名称" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="season" class="form-label">季节</label>
+                                <select id="season" class="form-control" required>
+                                    <option value="春天">春天</option>
+                                    <option value="夏天">夏天</option>
+                                    <option value="秋天">秋天</option>
+                                    <option value="冬天">冬天</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="days" class="form-label">行程天数</label>
+                                <input type="number" id="days" class="form-control" placeholder="请输入天数" min="1" max="30" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="budget" class="form-label">总预算(元)</label>
+                                <input type="number" id="budget" class="form-control" placeholder="请输入预算" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <button type="button" id="generate-btn" class="btn btn-primary btn-lg">生成旅游路线</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="result-container" style="display: none;">
+    <div class="col-xl-12 col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>AI推荐旅游路线</h5>
+                <span class="text-muted">根据您的需求生成的个性化旅游路线</span>
+            </div>
+            <div class="card-block">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="map-container" style="height: 500px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                            <!-- 地图将在这里显示 -->
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <p>地图加载中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6>详细行程安排</h6>
+                            </div>
+                            <div class="card-block">
+                                <div id="itinerary-table">
+                                    <!-- 行程表格将在这里显示 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    #generate-btn {
+        margin-top: 1.5rem;
+    }
+    
+    #result-container {
+        margin-top: 2rem;
+    }
+    
+    .itinerary-item {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    
+    .itinerary-item h6 {
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    
+    .itinerary-item p {
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+    
+    /* 表格样式 */
+    #itinerary-table table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    
+    #itinerary-table th,
+    #itinerary-table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+    }
+    
+    #itinerary-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    #itinerary-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    #itinerary-table tr:hover {
+        background-color: #e9ecef;
+    }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://api.map.baidu.com/api?v=3.0&ak=oqFHtxaZrECmDHa3pUVu6tdoEs2wchW9"></script>
+<script>
+    $(document).ready(function() {
+        // 生成旅游路线按钮点击事件
+        $('#generate-btn').click(function() {
+            // 获取表单数据
+            var city = $('#city').val().trim();
+            var season = $('#season').val();
+            var days = $('#days').val();
+            var budget = $('#budget').val();
+            
+            // 验证表单
+            if (!city || !season || !days || !budget) {
+                alert('请填写所有必填字段');
+                return;
+            }
+            
+            // 显示加载状态
+            $('#generate-btn').text('生成中...').prop('disabled', true);
+            
+            // 发送请求到后端
+            $.ajax({
+                url: '/home/generate_travel_route',
+                type: 'POST',
+                data: {
+                    'city': city,
+                    'season': season,
+                    'days': days,
+                    'budget': budget,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(response) {
+                    // 隐藏加载状态
+                    $('#generate-btn').text('生成旅游路线').prop('disabled', false);
+                    
+                    if (response.success) {
+                        // 显示结果容器
+                        $('#result-container').show();
+                        
+                        // 渲染行程表格
+                        renderItineraryTable(response.route.table);
+                        
+                        // 渲染地图
+                        renderMap(response.route.points);
+                    } else {
+                        alert('生成旅游路线失败: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // 隐藏加载状态
+                    $('#generate-btn').text('生成旅游路线').prop('disabled', false);
+                    alert('请求失败: ' + error);
+                }
+            });
+        });
+        
+        // 渲染行程表格
+        function renderItineraryTable(table) {
+            // 将Markdown表格转换为HTML表格
+            var htmlTable = convertMarkdownTableToHTML(table);
+            $('#itinerary-table').html(htmlTable);
+        }
+        
+        // 将Markdown表格转换为HTML表格
+        function convertMarkdownTableToHTML(markdownTable) {
+            if (!markdownTable) {
+                return '<p>暂无行程安排</p>';
+            }
+            
+            var lines = markdownTable.trim().split('\n');
+            var html = '<table class="table table-striped table-bordered">';
+            var isHeader = true;
+            var isSeparator = false;
+            
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim();
+                
+                // 跳过空行
+                if (!line) {
+                    continue;
+                }
+                
+                // 检查是否是分隔线
+                if (line.includes('|---')) {
+                    isSeparator = true;
+                    continue;
+                }
+                
+                // 移除首尾的|并分割单元格
+                var cells = line.replace(/^\||\|$/g, '').split('|').map(function(cell) {
+                    return cell.trim();
+                });
+                
+                if (cells.length === 0) {
+                    continue;
+                }
+                
+                if (isHeader) {
+                    // 表头
+                    html += '<thead><tr>';
+                    for (var j = 0; j < cells.length; j++) {
+                        html += '<th>' + cells[j] + '</th>';
+                    }
+                    html += '</tr></thead><tbody>';
+                    isHeader = false;
+                } else {
+                    // 数据行
+                    html += '<tr>';
+                    for (var j = 0; j < cells.length; j++) {
+                        html += '<td>' + cells[j] + '</td>';
+                    }
+                    html += '</tr>';
+                }
+            }
+            
+            html += '</tbody></table>';
+            
+            return html;
+        }
+        
+        // 渲染地图
+        function renderMap(points) {
+            var mapContainer = document.getElementById('map-container');
+            
+            // 清空地图容器
+            mapContainer.innerHTML = '';
+            
+            // 创建百度地图实例
+            var map = new BMap.Map(mapContainer);
+            
+            if (points.length > 0) {
+                // 设置地图中心点为第一个景点
+                var centerPoint = new BMap.Point(points[0].longitude, points[0].latitude);
+                map.centerAndZoom(centerPoint, 13);
+                
+                // 添加地图控件
+                map.addControl(new BMap.NavigationControl());
+                map.addControl(new BMap.ScaleControl());
+                map.addControl(new BMap.OverviewMapControl());
+                map.addControl(new BMap.MapTypeControl());
+                
+                // 标记景点
+                var markers = [];
+                for (var i = 0; i < points.length; i++) {
+                    var point = new BMap.Point(points[i].longitude, points[i].latitude);
+                    var marker = new BMap.Marker(point);
+                    
+                    // 添加景点名称标签
+                    var label = new BMap.Label(points[i].name, {
+                        offset: new BMap.Size(20, -10)
+                    });
+                    marker.setLabel(label);
+                    
+                    // 添加点击事件
+                    marker.addEventListener('click', function(e) {
+                        var point = e.target.getPosition();
+                        map.panTo(point);
+                    });
+                    
+                    map.addOverlay(marker);
+                    markers.push(marker);
+                }
+                
+                // 绘制路线
+                if (points.length > 1) {
+                    var polylinePoints = [];
+                    for (var i = 0; i < points.length; i++) {
+                        polylinePoints.push(new BMap.Point(points[i].longitude, points[i].latitude));
+                    }
+                    
+                    var polyline = new BMap.Polyline(polylinePoints, {
+                        strokeColor: "#ff6b6b",
+                        strokeWeight: 3,
+                        strokeOpacity: 0.8,
+                        strokeStyle: "dashed"
+                    });
+                    map.addOverlay(polyline);
+                }
+                
+                // 调整地图视野以显示所有景点
+                var view = map.getViewport(markers.map(function(marker) {
+                    return marker.getPosition();
+                }));
+                var mapZoom = view.zoom;
+                var centerPoint = view.center;
+                map.centerAndZoom(centerPoint, mapZoom);
+            } else {
+                // 如果没有景点数据，显示默认地图
+                var defaultPoint = new BMap.Point(116.404, 39.915);
+                map.centerAndZoom(defaultPoint, 10);
+            }
+            
+            // 响应式
+            window.addEventListener('resize', function() {
+                map.resetSize();
+            });
+        }
+    });
+</script>
+{% endblock %}

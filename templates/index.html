@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <!-- task, page, download counter  start -->
+    <div class=" col-xl-3 col-md-6 ">
+        <div class="card">
+            <div class="card-block">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <h4 class="text-c-purple">{{non_free_count}}</h4>
+                        <h6 class="text-muted m-b-0">收费景区数量</h6>
+                    </div>
+                    <div class="col-4 text-right">
+                        <i class="fa fa-bar-chart f-28"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-c-purple">
+                <div class="row align-items-center">
+                    <div class="col-9">
+                        <p class="text-white m-b-0">收费景区</p>
+                    </div>
+                    <div class="col-3 text-right">
+                        <i class="fa fa-line-chart text-white f-16"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
+            <div class="card-block">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <h4 class="text-c-green">{{ pro_count  }}+</h4>
+                        <h6 class="text-muted m-b-0">省份数量</h6>
+                    </div>
+                    <div class="col-4 text-right">
+                        <i class="fa fa-file-text-o f-28"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-c-green">
+                <div class="row align-items-center">
+                    <div class="col-9">
+                        <p class="text-white m-b-0">系统中所有省份的数量</p>
+                    </div>
+                    <div class="col-3 text-right">
+                        <i class="fa fa-line-chart text-white f-16"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
+            <div class="card-block">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <h4 class="text-c-red">{{ city_count }}</h4>
+                        <h6 class="text-muted m-b-0">城市数量</h6>
+                    </div>
+                    <div class="col-4 text-right">
+                        <i class="fa fa-calendar-check-o f-28"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-c-red">
+                <div class="row align-items-center">
+                    <div class="col-9">
+                        <p class="text-white m-b-0">系统中城市的数量</p>
+                    </div>
+                    <div class="col-3 text-right">
+                        <i class="fa fa-line-chart text-white f-16"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card">
+            <div class="card-block">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <h4 class="text-c-blue">{{ comment_count }}</h4>
+                        <h6 class="text-muted m-b-0">总评论数</h6>
+                    </div>
+                    <div class="col-4 text-right">
+                        <i class="fa fa-hand-o-down f-28"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-c-blue">
+                <div class="row align-items-center">
+                    <div class="col-9">
+                        <p class="text-white m-b-0">系统中所有的景区评论</p>
+                    </div>
+                    <div class="col-3 text-right">
+                        <i class="fa fa-line-chart text-white f-16"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- task, page, download counter  end -->
+
+    <!--  sale analytics start -->
+    <div class="col-xl-8 col-md-12">
+        <div class="col-xl-12 col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>各景区数量</h5>
+                <span class="text-muted">地图展示了中国各省份的景点数量</span>
+                <div class="card-header-right">
+                    <ul class="list-unstyled card-option">
+                        <li><i class="fa fa fa-wrench open-card-option"></i></li>
+                        <li><i class="fa fa-window-maximize full-card"></i></li>
+                        <li><i class="fa fa-minus minimize-card"></i></li>
+                        <li><i class="fa fa-refresh reload-card"></i></li>
+                        <li><i class="fa fa-trash close-card"></i></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-block">
+                <div id="china-map" style="width: 100%; height: 500px;"></div>
+            </div>
+            <!-- ECharts and China map -->
+            <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+            <script src="{% static 'assets/js/china.js' %}"></script>
+            <script>
+            // 调试代码
+            console.log('Map data:', {{ mapData|safe }});
+            
+            var myChart = echarts.init(document.getElementById('china-map'));
+            var mapData = {{ mapData|safe }};
+            
+            var option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        return params.name + ': ' + params.value + '个景点';
+                    }
+                },
+                visualMap: {
+                    show: true,
+                    left: 'left',
+                    top: 'bottom',
+                    pieces: [
+                        {min: 300, max: 10000, label: '≥300', color: '#ff4d4f'},
+                        {min: 150, max: 299, label: '150-300', color: '#52c41a'},
+                        {min: 100, max: 149, label: '100-150', color: '#fa8c16'},
+                        {min: 50, max: 99, label: '50-100', color: '#faad14'},
+                        {min: 10, max: 49, label: '10-50', color: '#1890ff'}
+                    ],
+                    showLabel: true
+                },
+                geo: {
+                    map: 'china',
+                    roam: false,
+                    zoom: 1.2,
+                    label: {
+                        normal: {
+                            show: true,
+                            fontSize: 10
+                        }
+                    },
+                    itemStyle: {
+                        normal: {
+                            areaColor: '#f5f5f5',
+                            borderColor: '#999'
+                        },
+                        emphasis: {
+                            areaColor: '#e6f7ff'
+                        }
+                    }
+                },
+                series: [{
+                    name: '景点数量',
+                    type: 'map',
+                    geoIndex: 0,
+                    data: mapData
+                }]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应式
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+            </script>
+        </div>
+    </div>
+        <div class="col-xl-12 col-md-12">
+        <div class="card quater-card">
+            <div class="card-block">
+                <h6 class="text-muted m-b-15">销量前十景点</h6>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #e0e0e0;">
+                                <th style="padding: 8px; text-align: left;">景区名称</th>
+                                <th style="padding: 8px; text-align: center;">价格</th>
+                                <th style="padding: 8px; text-align: center;">评论数量</th>
+                                <th style="padding: 8px; text-align: center;">景区标签</th>
+                                <th style="padding: 8px; text-align: center;">景区评分</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for spot in sales_spots %}
+                            <tr style="border-bottom: 1px solid #f0f0f0; vertical-align: middle;">
+                                <td style="padding: 10px;">
+                                    <div style="display: flex; align-items: center;">
+                                        {% if spot.image_url %}
+                                        <img src="{{ spot.image_url }}" alt="{{ spot.name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 10px;">
+                                        {% else %}
+                                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt={{ spot.name }} China landmark&image_size=square" alt="{{ spot.name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 10px;">
+                                        {% endif %}
+                                        <div>
+                                            <div>{{ spot.name }}</div>
+                                            <div style="font-size: 12px; color: #666;">{{ spot.city }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 10px; text-align: center; color: #ff4d4f;">{{ spot.price }}</td>
+                                <td style="padding: 10px; text-align: center; color: #1890ff;">{{ spot.value }}</td>
+                                <td style="padding: 10px; text-align: center;">{{ spot.tags }}</td>
+                                <td style="padding: 10px; text-align: center;">
+                                    <span style="background-color: #f5f5f5; padding: 2px 8px; border-radius: 10px; font-size: 12px;">★{{ spot.rating }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    
+    <div class="col-xl-4 col-md-12">
+        <div class="card">
+            <div class="card-block">
+                <div class="row">
+                    <div class="col">
+                        <h4>景区热度排行</h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div style="padding: 10px 0;">
+                            {% for spot in hot_spots %}
+                            <div style="display: flex; margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #f0f0f0;">
+                                <div style="flex-shrink: 0; margin-right: 15px;">
+                                    {% if spot.image_url %}
+                                    <img src="{{ spot.image_url }}" alt="{{ spot.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                    {% else %}
+                                    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt={{ spot.name }} China landmark&image_size=square" alt="{{ spot.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                    {% endif %}
+                                </div>
+                                <div style="flex-grow: 1;">
+                                    <h6 style="margin: 0 0 5px 0; font-weight: bold;">{{ spot.name }}</h6>
+                                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                                        <i class="fa fa-fire" style="color: #ff4d4f; margin-right: 5px;"></i>
+                                        <span>{{ spot.value }}</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; font-size: 12px; color: #666;">
+                                        <i class="fa fa-map-marker" style="margin-right: 5px;"></i>
+                                        <span>{{ spot.location }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!--  sale analytics end -->
+
+</div>
+{% endblock %}

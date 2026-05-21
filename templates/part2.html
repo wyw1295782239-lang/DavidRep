@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <!-- 左侧漏斗图 -->
+    <div class="col-xl-6 col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>景区评论数量排行</h5>
+                <span class="text-muted">使用漏斗图展示评论数量前10的景点</span>
+            </div>
+            <div class="card-block">
+                <div id="hot-chart" style="width: 100%; height: 600px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 右侧柱状图 -->
+    <div class="col-xl-6 col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>各城市热门景点排行</h5>
+                        <span class="text-muted">展示各城市热度最高的景点</span>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <select id="city-select" class="form-control" style="width: 150px; display: inline-block;">
+                            <!-- 城市列表将由JavaScript动态生成 -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="card-block">
+                <div id="city-hot-chart" style="width: 100%; height: 600px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+// 从后端获取的spot_sales数据库数据
+var hotData = {{ hot_data|safe }};
+
+// 左侧漏斗图
+var myChart = echarts.init(document.getElementById('hot-chart'));
+
+// 定义颜色
+var funnelColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#ff9a44'];
+
+var option = {
+    title: {
+        text: '景区评论数据排行',
+        left: 'center',
+        textStyle: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            color: '#333'
+        }
+    },
+    tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c}',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderColor: '#ddd',
+        borderWidth: 1,
+        textStyle: {
+            color: '#333'
+        }
+    },
+    legend: {
+        data: hotData.map(item => item.name),
+        orient: 'horizontal',
+        bottom: 10,
+        type: 'scroll',
+        itemWidth: 12,
+        itemHeight: 12,
+        textStyle: {
+            color: '#666',
+            fontSize: 12
+        }
+    },
+    series: [
+        {
+            name: '热度值',
+            type: 'funnel',
+            left: '10%',
+            width: '80%',
+            sort: 'descending',
+            emphasis: {
+                label: {
+                    fontSize: 16,
+                    fontWeight: 'bold'
+                },
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            },
+            data: hotData,
+            label: {
+                formatter: '{b}: {c}',
+                position: 'inside',
+                fontSize: 12,
+                fontWeight: 'bold',
+                color: '#fff'
+            },
+            itemStyle: {
+                borderColor: '#fff',
+                borderWidth: 1
+            },
+            color: funnelColors
+        }
+    ]
+};
+
+myChart.setOption(option);
+
+// 右侧城市热门景点柱状图
+var cityHotChart = echarts.init(document.getElementById('city-hot-chart'));
+
+// 从后端获取的city_hotspots数据库数据
+var cityHotData = {{ city_hot_data|safe }};
+
+// 动态生成城市选择下拉框
+var citySelect = document.getElementById('city-select');
+var cities = Object.keys(cityHotData);
+cities.sort();
+
+// 添加所有城市选项
+for (var i = 0; i < cities.length; i++) {
+    var option = document.createElement('option');
+    option.value = cities[i];
+    option.textContent = cities[i];
+    citySelect.appendChild(option);
+}
+
+// 初始化第一个城市的热门景点数据
+var firstCity = cities.length > 0 ? cities[0] : '北京';
+updateCityHotChart(firstCity);
+
+// 城市选择事件
+citySelect.addEventListener('change', function() {
+    var city = this.value;
+    updateCityHotChart(city);
+});
+
+// 更新城市热门景点图表
+function updateCityHotChart(city) {
+    var data = cityHotData[city] || [];
+    // 按热度值由高到低排序
+    data.sort(function(a, b) {
+        return b.value - a.value;
+    });
+    
+    var option = {
+        title: {
+            text: city + '热门景点排行',
+            left: 'center',
+            textStyle: {
+                fontSize: 18,
+                fontWeight: 'bold',
+                color: '#333'
+            }
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            },
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#ddd',
+            borderWidth: 1,
+            textStyle: {
+                color: '#333'
+            }
+        },
+        grid: {
+            left: '12%',
+            right: '8%',
+            bottom: '3%',
+            top: '15%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'value',
+            name: '热度值',
+            max: 10,
+            axisLabel: {
+                color: '#666',
+                formatter: '{value}'
+            },
+            axisLine: {
+                lineStyle: {
+                    color: '#ddd'
+                }
+            },
+            splitLine: {
+                lineStyle: {
+                    color: '#f0f0f0'
+                }
+            }
+        },
+        yAxis: {
+            type: 'category',
+            data: data.map(item => item.name),
+            axisLabel: {
+                interval: 0,
+                rotate: 0,
+                color: '#666',
+                fontSize: 12
+            },
+            axisLine: {
+                lineStyle: {
+                    color: '#ddd'
+                }
+            },
+            axisTick: {
+                show: false
+            }
+        },
+        series: [
+            {
+                name: '热度值',
+                type: 'bar',
+                data: data.map(item => item.value),
+                itemStyle: {
+                    color: function(params) {
+                        var colors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#ff9a44'];
+                        return colors[params.dataIndex % colors.length];
+                    },
+                    borderRadius: [0, 4, 4, 0]
+                },
+                barWidth: '60%',
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.3)'
+                    }
+                },
+                label: {
+                    show: true,
+                    position: 'right',
+                    formatter: '{c}',
+                    color: '#666',
+                    fontWeight: 'bold'
+                }
+            }
+        ]
+    };
+    
+    cityHotChart.setOption(option);
+}
+
+// 响应式
+window.addEventListener('resize', function() {
+    myChart.resize();
+    cityHotChart.resize();
+});
+</script>
+{% endblock %}

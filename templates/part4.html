@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-xl-12 col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>景点信息词云</h5>
+                <span class="text-muted">使用词云展示景点相关的关键词</span>
+            </div>
+            <div class="card-block">
+                <div id="wordcloud-chart" style="width: 100%; height: 600px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+<script>
+var wordcloudData = {{ wordcloud_data|safe }};
+
+var myChart = echarts.init(document.getElementById('wordcloud-chart'));
+
+var option = {
+    title: {
+        text: '景点信息词云',
+        left: 'center',
+        textStyle: {
+            fontSize: 18,
+            fontWeight: 'bold'
+        }
+    },
+    tooltip: {},
+    series: [
+        {
+            type: 'wordCloud',
+            shape: 'circle',
+            left: 'center',
+            top: 'center',
+            width: '90%',
+            height: '80%',
+            right: null,
+            bottom: null,
+            sizeRange: [12, 60],
+            rotationRange: [-90, 90],
+            rotationStep: 45,
+            gridSize: 8,
+            drawOutOfBound: false,
+            textStyle: {
+                fontFamily: 'sans-serif',
+                fontWeight: 'bold',
+                color: function () {
+                    var colors = [
+                        '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7',
+                        '#dfe6e9', '#e17055', '#00b894', '#6c5ce7', '#a29bfe',
+                        '#fd79a8', '#fdcb6e', '#6c5ce7', '#00b894', '#e17055'
+                    ];
+                    return colors[Math.floor(Math.random() * colors.length)];
+                }
+            },
+            emphasis: {
+                focus: 'self',
+                textStyle: {
+                    shadowBlur: 10,
+                    shadowColor: '#333'
+                }
+            },
+            data: wordcloudData
+        }
+    ]
+};
+
+myChart.setOption(option);
+
+// 响应式
+window.addEventListener('resize', function() {
+    myChart.resize();
+});
+</script>
+{% endblock %}

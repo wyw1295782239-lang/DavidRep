@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-xl-12 col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>景点门票价格分析</h5>
+                <span class="text-muted">分析不同价格区间的景点数量分布</span>
+            </div>
+            <div class="card-block">
+                <div id="price-chart" style="width: 100%; height: 600px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+var priceData = {{ price_data|safe }};
+
+var myChart = echarts.init(document.getElementById('price-chart'));
+
+// 提取数据
+var ranges = priceData.map(item => item.range);
+var counts = priceData.map(item => item.count);
+
+// 计算平均值
+var total = counts.reduce((sum, count) => sum + count, 0);
+var weightedSum = priceData.reduce((sum, item, index) => {
+    // 简化计算，使用区间中点作为价格值
+    var midPrice = 0;
+    if (item.range === '1000元以上') {
+        midPrice = 1250;
+    } else if (item.range === '免费') {
+        midPrice = 0;
+    } else {
+        var parts = item.range.replace('元', '').split('-');
+        var min = parseFloat(parts[0]);
+        var max = parseFloat(parts[1]);
+        midPrice = (min + max) / 2;
+    }
+    return sum + midPrice * item.count;
+}, 0);
+var averagePrice = total > 0 ? (weightedSum / total).toFixed(2) : '0.00';
+
+var option = {
+    title: {
+        text: '景点门票价格分析',
+        left: 'center',
+        textStyle: {
+            fontSize: 18,
+            fontWeight: 'bold'
+        }
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+            crossStyle: {
+                color: '#999'
+            }
+        },
+        formatter: function(params) {
+            var data = params[0];
+            return data.name + '<br/>景点数量: ' + data.value + '个';
+        }
+    },
+    legend: {
+        data: ['景点数量'],
+        top: 30
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '15%',
+        containLabel: true
+    },
+    xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: ranges,
+        axisLabel: {
+            color: '#666'
+        },
+        axisLine: {
+            lineStyle: {
+                color: '#ddd'
+            }
+        }
+    },
+    yAxis: {
+        type: 'value',
+        name: '景点数量',
+        min: 0,
+        axisLabel: {
+            formatter: '{value}',
+            color: '#666'
+        },
+        axisLine: {
+            lineStyle: {
+                color: '#ddd'
+            }
+        },
+        splitLine: {
+            lineStyle: {
+                color: '#f0f0f0'
+            }
+        }
+    },
+    series: [
+        {
+            name: '景点数量',
+            type: 'line',
+            data: counts,
+            smooth: true,
+            lineStyle: {
+                width: 3,
+                color: '#5470c6'
+            },
+            itemStyle: {
+                color: '#5470c6'
+            },
+            symbol: 'circle',
+            symbolSize: 10,
+            areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    {offset: 0, color: 'rgba(84, 112, 198, 0.3)'},
+                    {offset: 1, color: 'rgba(84, 112, 198, 0.05)'}
+                ])
+            }
+        }
+    ],
+    graphic: [
+        {
+            type: 'text',
+            left: 'right',
+            bottom: '5%',
+            style: {
+                text: '平均价格: ¥' + averagePrice,
+                fontSize: 16,
+                fontWeight: 'bold',
+                fill: '#333'
+            }
+        }
+    ]
+};
+
+myChart.setOption(option);
+
+// 响应式
+window.addEventListener('resize', function() {
+    myChart.resize();
+});
+</script>
+{% endblock %}

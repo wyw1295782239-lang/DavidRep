@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+                        <!-- Page-header end -->
+                        <div class="pcoded-inner-content">
+                            <!-- Main-body start -->
+                            <div class="main-body">
+                                <div class="page-wrapper">
+                                    <!-- Page-body start -->
+                                    <div class="page-body">
+                                        <!-- CSRF令牌 -->
+                                        {% csrf_token %}
+                                        <!-- 搜索和筛选表单 -->
+                                        <div class="row mb-3">
+                                            <div class="col-md-12">
+                                                <form method="get" class="form-inline">
+                                                    <div style="position: relative; width: 250px; margin-right: 10px;">
+                                                        <input type="text" class="form-control" name="search_name" placeholder="景点名称" value="{{ search_name }}" style="width: 100%; padding: 6px 12px; padding-left: 30px; border: 1px solid #ced4da; border-radius: 4px; height: 36px;">
+                                                        <i class="fa fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                                                    </div>
+                                                    <select class="form-control" name="province" style="width: 250px; margin-right: 10px; padding: 6px 12px; border: 1px solid #ced4da; border-radius: 4px; height: 36px;">
+                                                        <option value="">所有省份</option>
+                                                        {% for province in provinces %}
+                                                            <option value="{{ province }}" {% if province == selected_province %}selected{% endif %}>{{ province }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <button type="submit" class="btn" style="background-color: #4285f4; color: white; border: none; padding: 6px 12px; margin-right: 5px; border-radius: 4px;">筛选</button>
+                                                    <button type="reset" class="btn" style="background-color: #34a853; color: white; border: none; padding: 6px 12px; border-radius: 4px;">重置</button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+
+                                        
+                                        <!-- 景点信息表格 -->
+                                        <div class="card" style="border: none; box-shadow: none;">
+                                            <div class="card-block table-border-style">
+                                                <div class="table-responsive">
+                                                    <table class="table" style="table-layout: fixed;">
+                                                        <thead>
+                                                            <tr style="background-color: #f8f9fa;">
+                                                                <th style="width: 50px;">#</th>
+                                                                <th style="width: 150px; white-space: normal; word-wrap: break-word;">景点名称</th>
+                                                                <th style="width: 120px;">图片</th>
+                                                                <th style="width: 150px; white-space: normal; word-wrap: break-word;">所在区域</th>
+                                                                <th style="width: 100px;">城市</th>
+                                                                <th style="width: 150px; white-space: normal; word-wrap: break-word;">标签</th>
+                                                                <th style="width: 100px;">写评价</th>
+                                                                <th style="width: 100px;">省份</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for spot in page_obj %}
+                                                                <tr>
+                                                                    <th scope="row">{{ forloop.counter }}</th>
+                                                                    <td style="white-space: normal; word-wrap: break-word; vertical-align: middle;">
+                                                                        {% if spot.name in recommended_spots %}
+                                                                            <span class="badge" style="background-color: #667eea; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; margin-right: 8px;">推荐</span>
+                                                                            {{ spot.name }}
+                                                                        {% else %}
+                                                                            {{ spot.name }}
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td style="vertical-align: middle;">
+                                                                        {% if spot.image_url %}
+                                                                            <img src={% static "assets/images/avatar-4.jpg" %} data-src="{{ spot.image_url }}" width="100" height="70" alt="{{ spot.name }}" style="object-fit: cover;" class="lazyload">
+                                                                        {% else %}
+                                                                            <img src={% static "assets/images/avatar-4.jpg" %} width="100" height="70" alt="默认图片" style="object-fit: cover;">
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td style="white-space: normal; word-wrap: break-word; vertical-align: middle;">{{ spot.area|default:"未知" }}</td>
+                                                                    <td style="vertical-align: middle;">{{ spot.city|default:"未知" }}</td>
+                                                                    <td style="white-space: normal; word-wrap: break-word; vertical-align: middle;">{{ spot.tags|default:"无" }}</td>
+                                                                    <td style="vertical-align: middle;">
+                                                                        <button class="btn btn-sm btn-primary" onclick="writeReview({{ spot.id }}, '{{ spot.name }}')">写评价</button>
+                                                                    </td>
+                                                                    <td style="vertical-align: middle;">{{ spot.province|default:"未知" }}</td>
+                                                                </tr>
+                                                            {% empty %}
+                                                                <tr>
+                                                                    <td colspan="8" class="text-center">暂无景点数据</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 分页控件 -->
+                                        <div class="pagination justify-content-center">
+                                            <ul class="pagination">
+                                                {% if page_obj.has_previous %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" 
+                                                           href="?page=1{% if search_name %}&search_name={{ search_name }}{% endif %}{% if selected_province %}&province={{ selected_province }}{% endif %}">
+                                                            &laquo; 首页
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_name %}&search_name={{ search_name }}{% endif %}{% if selected_province %}&province={{ selected_province }}{% endif %}">
+                                                            上一页
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+
+                                                {% for num in page_obj.paginator.page_range %}
+                                                    {% if page_obj.number == num %}
+                                                        <li class="page-item active">
+                                                            <a class="page-link" href="?page={{ num }}{% if search_name %}&search_name={{ search_name }}{% endif %}{% if selected_province %}&province={{ selected_province }}{% endif %}">
+                                                                {{ num }}
+                                                            </a>
+                                                        </li>
+                                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                        <li class="page-item">
+                                                            <a class="page-link" href="?page={{ num }}{% if search_name %}&search_name={{ search_name }}{% endif %}{% if selected_province %}&province={{ selected_province }}{% endif %}">
+                                                                {{ num }}
+                                                            </a>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                                {% if page_obj.has_next %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_name %}&search_name={{ search_name }}{% endif %}{% if selected_province %}&province={{ selected_province }}{% endif %}">
+                                                            下一页
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_name %}&search_name={{ search_name }}{% endif %}{% if selected_province %}&province={{ selected_province }}{% endif %}">
+                                                            末页 &raquo;
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                        <div class="text-center">
+                                            当前显示第 {{ page_obj.start_index }} - {{ page_obj.end_index }} 条，共 {{ page_obj.paginator.count }} 条记录
+                                        </div>
+                                    </div>
+                                    <!-- Page-body end -->
+                                </div>
+                                <div id="styleSelector"> </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Section Starts -->
+    <!-- Older IE warning message -->
+    <!--[if lt IE 10]>
+    <div class="ie-warning">
+        <h1>Warning!!</h1>
+        <p>You are using an outdated version of Internet Explorer, please upgrade <br/>to any of the following web browsers to access this website.</p>
+        <div class="iew-container">
+            <ul class="iew-download">
+                <li>
+                    <a href="http://www.google.com/chrome/">
+                        <img src={% static "assets/images/browser/chrome.png" %} alt="Chrome">
+                        <div>Chrome</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://www.mozilla.org/en-US/firefox/new/">
+                        <img src={% static "assets/images/browser/firefox.png" %} alt="Firefox">
+                        <div>Firefox</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="http://www.opera.com">
+                        <img src={% static "assets/images/browser/opera.png" %} alt="Opera">
+                        <div>Opera</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://www.apple.com/safari/">
+                        <img src={% static "assets/images/browser/safari.png" %} alt="Safari">
+                        <div>Safari</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="http://windows.microsoft.com/en-us/internet-explorer/download-ie">
+                        <img src={% static "assets/images/browser/ie.png" %} alt="">
+                        <div>IE (9 & above)</div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <p>Sorry for the inconvenience!</p>
+    </div>
+    <![endif]-->
+    <!-- Warning Section Ends -->
+    <!-- Required Jquery -->
+    <script type="text/javascript" src={% static "assets/js/jquery/jquery.min.js" %}></script>
+    <script type="text/javascript" src={% static "assets/js/jquery-ui/jquery-ui.min.js" %}></script>
+    <script type="text/javascript" src={% static "assets/js/popper.js/popper.min.js" %}></script>
+    <script type="text/javascript" src={% static "assets/js/bootstrap/js/bootstrap.min.js" %}></script>
+    <!-- waves js -->
+    <script src={% static "assets/pages/waves/js/waves.min.js" %}></script>
+    <!-- jquery slimscroll js -->
+    <script type="text/javascript" src={% static "assets/js/jquery-slimscroll/jquery.slimscroll.js" %}></script>
+    <!-- waves js -->
+    <script src={% static "assets/pages/waves/js/waves.min.js" %}></script>
+    <!-- modernizr js -->
+    <script type="text/javascript" src={% static "assets/js/modernizr/modernizr.js" %}></script>
+    <!-- Custom js -->
+    <script src={% static "assets/js/pcoded.min.js" %}></script>
+    <script src={% static "assets/js/vertical-layout.min.js" %}></script>
+    <script src={% static "assets/js/jquery.mCustomScrollbar.concat.min.js" %}></script>
+    <script type="text/javascript" src={% static "assets/js/script.js" %}></script>
+    <!-- 图片懒加载脚本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lazyImages = document.querySelectorAll('.lazyload');
+            
+            if ('IntersectionObserver' in window) {
+                // 使用Intersection Observer API实现懒加载
+                const imageObserver = new IntersectionObserver(function(entries, observer) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            const image = entry.target;
+                            image.src = image.dataset.src;
+                            image.classList.remove('lazyload');
+                            imageObserver.unobserve(image);
+                        }
+                    });
+                });
+                
+                lazyImages.forEach(function(image) {
+                    imageObserver.observe(image);
+                });
+            } else {
+                // 回退方案：使用滚动事件
+                let lazyImageObserver = new LazyLoadImageObserver(lazyImages);
+                window.addEventListener('scroll', function() {
+                    lazyImageObserver.observe();
+                });
+                
+                function LazyLoadImageObserver(images) {
+                    this.images = images;
+                    this.observe = function() {
+                        for (let i = 0; i < this.images.length; i++) {
+                            if (this.isInViewport(this.images[i])) {
+                                this.images[i].src = this.images[i].dataset.src;
+                                this.images[i].classList.remove('lazyload');
+                                this.images.splice(i, 1);
+                                i--;
+                            }
+                        }
+                    };
+                    
+                    this.isInViewport = function(element) {
+                        const rect = element.getBoundingClientRect();
+                        return (
+                            rect.top >= 0 &&
+                            rect.left >= 0 &&
+                            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+                        );
+                    };
+                }
+            }
+        });
+        
+        // 写评价功能
+        function writeReview(spotId, spotName) {
+            // 创建评价表单模态框
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = 'reviewModal';
+            modal.tabIndex = '-1';
+            modal.role = 'dialog';
+            modal.innerHTML = `
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">为 ${spotName} 写评价</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="reviewForm">
+                                <input type="hidden" name="spot_id" value="${spotId}">
+                                <div class="form-group">
+                                    <label for="rating">评分</label>
+                                    <select class="form-control" id="rating" name="rating" required>
+                                        <option value="5">5分 - 非常满意</option>
+                                        <option value="4">4分 - 满意</option>
+                                        <option value="3">3分 - 一般</option>
+                                        <option value="2">2分 - 不满意</option>
+                                        <option value="1">1分 - 非常不满意</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="content">评价内容</label>
+                                    <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="submitReview()">提交评价</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // 显示模态框
+            $(modal).modal('show');
+            
+            // 模态框关闭时清理
+            $(modal).on('hidden.bs.modal', function() {
+                modal.remove();
+            });
+        }
+        
+        // 提交评价
+        function submitReview() {
+            const form = document.getElementById('reviewForm');
+            const formData = new FormData(form);
+            
+            // 添加CSRF令牌
+            formData.append('csrfmiddlewaretoken', $('input[name=csrfmiddlewaretoken]').val());
+            
+            // AJAX提交逻辑
+            $.ajax({
+                url: '/home/submit_review',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        $('#reviewModal').modal('hide');
+                    } else {
+                        alert('评价提交失败：' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('评价提交失败，请重试。');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
+{% endblock %}
